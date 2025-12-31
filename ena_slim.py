@@ -4,16 +4,19 @@ import gzip
 import sys
 from pathlib import Path
 
-# Keep only WGS/WGA-like data (exclude amplicon/targeted/WXS),
-# require >= MIN_READS, and require library_selection == RANDOM
+# Keep only WGS (exclude amplicon/targeted/WXS/WGA),
+# require >= MIN_READS, require library_selection == RANDOM,
+# and require scientific_name == "Homo sapiens"
 MIN_READS = 100_000
 KEEP_LIBRARY_SELECTION = "RANDOM"
+KEEP_SCIENTIFIC_NAME = "Homo sapiens"
 EXCLUDE_STRATEGY_TERMS = (
     "amplicon",
     "wxs",
     "targeted-capture",
     "targeted_capture",
     "targeted",
+    "wga",  # explicitly exclude WGA
 )
 
 IN_COLS = [
@@ -26,6 +29,8 @@ IN_COLS = [
     "library_layout",
     "instrument_platform",
     "instrument_model",
+    "scientific_name",
+    "tax_id",
 ]
 
 OUT_COLS = [
@@ -38,6 +43,8 @@ OUT_COLS = [
     "library_layout",
     "instrument_platform",
     "instrument_model",
+    "scientific_name",
+    "tax_id",
 ]
 
 def smart_open(path: Path, mode="rt"):
@@ -65,17 +72,18 @@ def parse_int(x) -> int:
 def norm(s: str) -> str:
     return (s or "").strip().lower()
 
-def is_wgs_or_wga_strategy(strategy: str) -> bool:
+def is_wgs_only(strategy: str) -> bool:
     s = norm(strategy)
     if not s:
         return False
     if any(term in s for term in EXCLUDE_STRATEGY_TERMS):
         return False
-    return s == "wgs" or s.startswith("wgs") or s == "wga" or s.startswith("wga")
+    # Only allow WGS (and things that start with it, if present)
+    return s == "wgs" or s.startswith("wgs")
 
 def main():
     if len(sys.argv) < 3:
-        print(f"Usage: {sys.argv[0]} ena_input.tsv[.gz] ena_filtered.csv[.gz]", file=sys.stderr)
+        print(f"Usage: {sys.argv[0]} ena_input.tsv[.gz] ena_filtered.tsv[.gz]", file=sys.stderr)
         sys.exit(2)
 
     in_path = Path(sys.argv[1]).expanduser().resolve()
@@ -90,9 +98,10 @@ def main():
     rows_in = 0
     rows_out = 0
     skipped_low_reads = 0
-    skipped_non_wgs_wga = 0
+    skipped_non_wgs = 0
     skipped_missing_fields = 0
     skipped_non_random = 0
+    skipped_non_hsapiens = 0
 
     with smart_open(in_path, "rt") as fin:
         first = fin.readline()
@@ -118,7 +127,7 @@ def main():
             sys.exit(1)
 
         with smart_open(out_path, "wt") as fout:
-            writer = csv.DictWriter(fout, fieldnames=OUT_COLS)
+            writer = csv.DictWriter(fout, fieldnames=OUT_COLS, delimiter="\t")
             writer.writeheader()
 
             for row in reader:
@@ -136,8 +145,8 @@ def main():
                     continue
 
                 strategy = (row.get("library_strategy") or "").strip()
-                if not is_wgs_or_wga_strategy(strategy):
-                    skipped_non_wgs_wga += 1
+                if not is_wgs_only(strategy):
+                    skipped_non_wgs += 1
                     continue
 
                 selection = (row.get("library_selection") or "").strip()
@@ -145,13 +154,19 @@ def main():
                     skipped_non_random += 1
                     continue
 
+                sci = (row.get("scientific_name") or "").strip()
+                if norm(sci) != norm(KEEP_SCIENTIFIC_NAME):
+                    skipped_non_hsapiens += 1
+                    continue
+
                 writer.writerow({c: (row.get(c) or "").strip() for c in OUT_COLS})
                 rows_out += 1
 
     print(f"Done. Read {rows_in} rows, wrote {rows_out} rows to {out_path}")
     print(f"Skipped (read_count < {MIN_READS}): {skipped_low_reads}")
-    print(f"Skipped (not WGS/WGA or excluded strategy terms): {skipped_non_wgs_wga}")
+    print(f"Skipped (not WGS or excluded strategy terms): {skipped_non_wgs}")
     print(f"Skipped (library_selection != {KEEP_LIBRARY_SELECTION}): {skipped_non_random}")
+    print(f"Skipped (scientific_name != '{KEEP_SCIENTIFIC_NAME}'): {skipped_non_hsapiens}")
     if skipped_missing_fields:
         print(f"Skipped (missing study_accession or run_accession): {skipped_missing_fields}")
 

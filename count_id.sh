@@ -2,11 +2,12 @@
 set -euo pipefail
 
 # Usage:
-#   ./count_id.sh file.csv
-# Counts unique values in the FIRST column (CSV), skipping the header row.
+#   ./count_id.sh file1 [file2 ...]
+# Counts unique IDs in the FIRST column, for either CSV (comma) or TSV (tab).
+# Skips the header row.
 
 if [[ $# -lt 1 ]]; then
-  echo "Usage: $0 file.csv [more.csv ...]" >&2
+  echo "Usage: $0 file1 [file2 ...]" >&2
   exit 2
 fi
 
@@ -16,8 +17,17 @@ for f in "$@"; do
     continue
   fi
 
+  first_line="$(head -n 1 "$f")"
+
+  # Detect delimiter from header line
+  if [[ "$first_line" == *$'\t'* ]]; then
+    delim=$'\t'
+  else
+    delim=','  # default
+  fi
+
   count="$(
-    awk -F',' 'NR>1 && $1!="" {print $1}' "$f" \
+    awk -F"$delim" 'NR>1 && $1!="" {print $1}' "$f" \
       | sort -u \
       | wc -l \
       | tr -d ' '
