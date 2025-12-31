@@ -1,0 +1,43 @@
+# COPROLITE / PALEOFECES
+COPR_A1	(coprolite OR coprolites) (shotgun OR WGS OR "whole genome shotgun" OR metagenome OR metagenomic OR metagenomics)
+COPR_A2	(coprolite OR coprolites) (ancient OR archaeological OR archeological OR prehistoric OR medieval OR historic) (shotgun OR WGS OR metagenome OR metagenomic)
+COPR_A3	(coprolite OR coprolites) (human OR Homo OR "Homo sapiens") (shotgun OR WGS OR metagenome OR metagenomic)
+COPR_A4	(coprolite OR coprolites) (paleogenomics OR paleogenomic OR paleogenome OR paleogenomes OR aDNA OR "ancient DNA")
+COPR_A5	(coprolite OR coprolites) (gut OR feces OR faeces OR stool) (shotgun OR WGS OR metagenome OR metagenomic)
+FEC_A1	(paleofeces OR paleofaeces OR palaeofaeces) (shotgun OR WGS OR "whole genome shotgun" OR metagenome OR metagenomic OR metagenomics)
+FEC_A2	(paleofeces OR paleofaeces OR palaeofaeces) (ancient OR archaeological OR archeological OR prehistoric OR medieval OR historic) (shotgun OR WGS OR metagenome OR metagenomic)
+FEC_A3	(paleofeces OR paleofaeces OR palaeofaeces) (human OR Homo OR "Homo sapiens") (shotgun OR WGS OR metagenome OR metagenomic)
+FEC_B1	("ancient feces" OR "ancient faeces") (shotgun OR WGS OR metagenome OR metagenomic OR metagenomics)
+FEC_B2	("ancient feces" OR "ancient faeces") (ancient OR archaeological OR prehistoric OR medieval OR historic) (shotgun OR WGS OR metagenome OR metagenomic)
+STOOL_A1	(feces OR faeces OR stool) (coprolite OR paleofeces OR paleofaeces OR palaeofaeces) (shotgun OR WGS OR metagenome OR metagenomic)
+STOOL_A2	(feces OR faeces OR stool) (ancient OR archaeological OR archeological OR prehistoric OR medieval OR historic) (coprolite OR paleofeces OR paleofaeces OR palaeofaeces) (shotgun OR WGS OR metagenome OR metagenomic)
+
+# DENTAL CALCULUS / ORAL
+CALC_A1	"dental calculus" (shotgun OR WGS OR "whole genome shotgun" OR metagenome OR metagenomic OR metagenomics)
+CALC_A2	"dental calculus" (ancient OR archaeological OR archeological OR prehistoric OR medieval OR historic) (shotgun OR WGS OR metagenome OR metagenomic)
+CALC_A3	"dental calculus" (human OR Homo OR "Homo sapiens") (shotgun OR WGS OR metagenome OR metagenomic)
+CALC_B1	("dental plaque" OR "calcified plaque") (shotgun OR WGS OR metagenome OR metagenomic OR metagenomics)
+CALC_B2	("dental plaque" OR "calcified plaque") (ancient OR archaeological OR archeological OR prehistoric OR medieval OR historic) (shotgun OR WGS OR metagenome OR metagenomic)
+ORAL_A1	("oral microbiome" OR "oral metagenome") (shotgun OR WGS OR metagenome OR metagenomic OR metagenomics)
+ORAL_A2	("oral microbiome" OR "oral metagenome") (ancient OR archaeological OR archeological OR prehistoric OR medieval OR historic) (shotgun OR WGS OR metagenome OR metagenomic)
+
+# MUMMY / GUT / INTESTINAL
+MUM_A1	(mummy OR mummified OR mummies) (shotgun OR WGS OR metagenome OR metagenomic OR metagenomics)
+MUM_A2	(mummy OR mummified OR mummies) (ancient OR archaeological OR archeological OR prehistoric OR medieval OR historic) (shotgun OR WGS OR metagenome OR metagenomic)
+MUM_A3	(mummy OR mummified OR mummies) (human OR Homo OR "Homo sapiens") (shotgun OR WGS OR metagenome OR metagenomic)
+GUT_A1	(mummy OR mummified OR mummies) (gut OR intestine OR intestinal) (shotgun OR WGS OR metagenome OR metagenomic)
+GUT_A2	(mummy OR mummified OR mummies) (gut OR intestine OR intestinal) (ancient OR archaeological OR archeological OR prehistoric OR medieval OR historic) (shotgun OR WGS OR metagenome OR metagenomic)
+GUT_A3	(mummy OR mummified OR mummies) (feces OR faeces OR stool) (shotgun OR WGS OR metagenome OR metagenomic)
+BIOPSY_A1	"intestinal biopsy" (shotgun OR WGS OR metagenome OR metagenomic OR metagenomics)
+BIOPSY_A2	"intestinal biopsy" (ancient OR archaeological OR archeological OR prehistoric OR medieval OR historic) (shotgun OR WGS OR metagenome OR metagenomic)
+
+# ANCIENT DNA / PALEO KEYWORDS
+ANC_A1	(ancient OR archaeological OR archeological) (shotgun OR WGS OR "whole genome shotgun") (metagenome OR metagenomic OR metagenomics)
+ANC_A2	(prehistoric OR medieval OR historic) (shotgun OR WGS OR "whole genome shotgun") (metagenome OR metagenomic OR metagenomics)
+ANC_A3	(aDNA OR "ancient DNA") (shotgun OR WGS) (metagenome OR metagenomic OR metagenomics)
+ANC_A4	paleogenom* (shotgun OR WGS) (metagenome OR metagenomic OR metagenomics)
+ANC_A5	(paleomicrobiolog* OR paleomicrobiology) (shotgun OR WGS OR metagenome OR metagenomic)
+
+# HUMAN-FILTERED GENERAL ANCIENT METAGENOMES
+HUM_A1	(human OR Homo OR "Homo sapiens") (ancient OR archaeological OR archeological OR prehistoric OR medieval OR historic) (shotgun OR WGS) (metagenome OR metagenomic OR metagenomics)
+HUM_A2	(human OR Homo OR "Homo sapiens") ("dental calculus" OR coprolite OR paleofeces OR paleofaeces OR palaeofaeces OR mummy OR mummified) (shotgun OR WGS OR metagenome OR metagenomic)
