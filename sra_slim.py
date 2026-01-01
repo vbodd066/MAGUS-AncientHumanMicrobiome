@@ -6,6 +6,7 @@ from pathlib import Path
 
 MIN_SPOTS = 100_000
 KEEP_LIBRARY_COMBINED = "WGS/RANDOM"
+KEEP_LIBRARY_SOURCE = "METAGENOMIC"
 KEEP_SCIENTIFIC_NAME = "Homo sapiens"
 
 def smart_open(path: Path, mode="rt"):
@@ -35,8 +36,7 @@ def combined_strategy(row: dict) -> str:
     sel = (row.get("LibrarySelection") or "").strip()
 
     if "/" in strat:
-        return strat  # already combined in some inputs
-
+        return strat
     if sel:
         return f"{strat}/{sel}" if strat else sel
     return strat
@@ -66,6 +66,7 @@ def main():
     skipped_low_spots = 0
     skipped_non_hsapiens = 0
     skipped_non_matching_strategy = 0
+    skipped_non_metagenomic = 0
 
     with smart_open(in_path, "rt") as fin:
         reader = csv.DictReader(fin)
@@ -73,7 +74,11 @@ def main():
             print("[ERROR] Could not read CSV header (empty file?)", file=sys.stderr)
             return 1
 
-        required = {"Run", "BioProject", "spots", "LibraryStrategy", "LibrarySelection", "ScientificName"}
+        required = {
+            "Run", "BioProject", "spots",
+            "LibraryStrategy", "LibrarySelection", "LibrarySource",
+            "ScientificName"
+        }
         missing_cols = sorted(required - set(reader.fieldnames))
         if missing_cols:
             print("[ERROR] Input CSV is missing required column(s): " + ", ".join(missing_cols), file=sys.stderr)
@@ -90,6 +95,7 @@ def main():
                 "SequencingMachine",
                 "ScientificName",
                 "LibraryStrategy",
+                "LibrarySource",
             ]
             writer = csv.DictWriter(fout, fieldnames=out_fields)
             writer.writeheader()
@@ -117,12 +123,16 @@ def main():
                     skipped_non_hsapiens += 1
                     continue
 
+                lib_source = (row.get("LibrarySource") or "").strip()
+                if norm(lib_source) != norm(KEEP_LIBRARY_SOURCE):
+                    skipped_non_metagenomic += 1
+                    continue
+
                 lib_combined = combined_strategy(row)
                 if norm(lib_combined) != norm(KEEP_LIBRARY_COMBINED):
                     skipped_non_matching_strategy += 1
                     continue
 
-                # Build remaining fields for output
                 spots = (row.get("spots") or "").strip()
                 spots_with_mates = (row.get("spots_with_mates") or "").strip()
 
@@ -141,7 +151,8 @@ def main():
                     "SeqType": seq_type,
                     "SequencingMachine": machine,
                     "ScientificName": sci_name,
-                    "LibraryStrategy": lib_combined,  # will be 'WGS/RANDOM'
+                    "LibraryStrategy": lib_combined,   # e.g., WGS/RANDOM
+                    "LibrarySource": lib_source,       # METAGENOMIC
                 })
                 rows_out += 1
 
@@ -150,6 +161,7 @@ def main():
     print(f"[DONE] Skipped missing Run: {skipped_missing_run}")
     print(f"[DONE] Skipped spots < {MIN_SPOTS}: {skipped_low_spots}")
     print(f"[DONE] Skipped ScientificName != '{KEEP_SCIENTIFIC_NAME}': {skipped_non_hsapiens}")
+    print(f"[DONE] Skipped LibrarySource != '{KEEP_LIBRARY_SOURCE}': {skipped_non_metagenomic}")
     print(f"[DONE] Skipped Library != '{KEEP_LIBRARY_COMBINED}': {skipped_non_matching_strategy}")
     print(f"[DONE] Output exists? {out_path.exists()} (size={out_path.stat().st_size if out_path.exists() else 'NA'})")
 

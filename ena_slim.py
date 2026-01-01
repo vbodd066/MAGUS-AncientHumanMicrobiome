@@ -5,18 +5,22 @@ import sys
 from pathlib import Path
 
 # Keep only WGS (exclude amplicon/targeted/WXS/WGA),
-# require >= MIN_READS, require library_selection == RANDOM,
-# and require scientific_name == "Homo sapiens"
+# require >= MIN_READS, require:
+#   library_selection == RANDOM
+#   library_source    == METAGENOMIC
+#   scientific_name   == Homo sapiens
 MIN_READS = 100_000
 KEEP_LIBRARY_SELECTION = "RANDOM"
+KEEP_LIBRARY_SOURCE = "METAGENOMIC"
 KEEP_SCIENTIFIC_NAME = "Homo sapiens"
+
 EXCLUDE_STRATEGY_TERMS = (
     "amplicon",
     "wxs",
     "targeted-capture",
     "targeted_capture",
     "targeted",
-    "wga",  # explicitly exclude WGA
+    "wga",
 )
 
 IN_COLS = [
@@ -78,7 +82,6 @@ def is_wgs_only(strategy: str) -> bool:
         return False
     if any(term in s for term in EXCLUDE_STRATEGY_TERMS):
         return False
-    # Only allow WGS (and things that start with it, if present)
     return s == "wgs" or s.startswith("wgs")
 
 def main():
@@ -101,6 +104,7 @@ def main():
     skipped_non_wgs = 0
     skipped_missing_fields = 0
     skipped_non_random = 0
+    skipped_non_metagenomic = 0
     skipped_non_hsapiens = 0
 
     with smart_open(in_path, "rt") as fin:
@@ -154,6 +158,11 @@ def main():
                     skipped_non_random += 1
                     continue
 
+                lib_source = (row.get("library_source") or "").strip()
+                if norm(lib_source) != norm(KEEP_LIBRARY_SOURCE):
+                    skipped_non_metagenomic += 1
+                    continue
+
                 sci = (row.get("scientific_name") or "").strip()
                 if norm(sci) != norm(KEEP_SCIENTIFIC_NAME):
                     skipped_non_hsapiens += 1
@@ -166,6 +175,7 @@ def main():
     print(f"Skipped (read_count < {MIN_READS}): {skipped_low_reads}")
     print(f"Skipped (not WGS or excluded strategy terms): {skipped_non_wgs}")
     print(f"Skipped (library_selection != {KEEP_LIBRARY_SELECTION}): {skipped_non_random}")
+    print(f"Skipped (library_source != {KEEP_LIBRARY_SOURCE}): {skipped_non_metagenomic}")
     print(f"Skipped (scientific_name != '{KEEP_SCIENTIFIC_NAME}'): {skipped_non_hsapiens}")
     if skipped_missing_fields:
         print(f"Skipped (missing study_accession or run_accession): {skipped_missing_fields}")
